@@ -1,0 +1,98 @@
+* { box-sizing: border-box; }
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #e5e7eb;
+  background: transparent;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
+button, input, textarea, select { font: inherit; }
+button { border: 0; cursor: pointer; }
+button:disabled, input:disabled { cursor: not-allowed; opacity: .5; }
+button:focus-visible, input:focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; }
+.todo-check input:focus-visible + .custom-check { outline: 2px solid #818cf8; outline-offset: 3px; }
+.app-surface { position: relative; width: 100%; height: 100%; }
+.app-surface.preview { display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at top, #28355a, #111827 70%); }
+.preview-label { position: fixed; top: 24px; left: 24px; right: 24px; color: #cbd5e1; font-size: 13px; text-align: center; }
+.panel-wrapper { position: relative; width: 100%; height: 100%; }
+.preview .panel-wrapper { width: 360px; height: 480px; max-width: 100vw; max-height: calc(100dvh - 100px); }
+.error-dot { position: absolute; left: 4px; bottom: 4px; width: 16px; height: 16px; border-radius: 50%; background: #dc2626; color: white; text-align: center; font-size: 12px; pointer-events: none; }
+
+.floating-shell { width: 72px; height: 72px; padding: 8px; }
+.floating-button { position: relative; width: 56px; height: 56px; border-radius: 18px; color: white; background: linear-gradient(145deg, #6366f1, #4338ca); box-shadow: 0 10px 28px rgba(15, 23, 42, .35); transition: transform .15s ease, box-shadow .15s ease; }
+.floating-button:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(15, 23, 42, .42); }
+.check-mark { font-size: 30px; font-weight: 800; line-height: 56px; }
+.badge { position: absolute; top: -5px; right: -5px; min-width: 22px; height: 22px; padding: 0 5px; border: 2px solid #fff; border-radius: 12px; color: #fff; background: #ef4444; font-size: 11px; font-weight: 800; line-height: 18px; }
+
+.panel { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; color: #111827; background: rgba(248, 250, 252, .98); border: 1px solid rgba(148, 163, 184, .35); border-radius: 18px; box-shadow: 0 18px 50px rgba(15, 23, 42, .28); animation: panel-in .14s ease-out; }
+.panel-header { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 14px 16px; color: white; background: linear-gradient(135deg, #4f46e5, #3730a3); }
+.panel-logo { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 13px; color: #4f46e5; background: #fff; font-size: 23px; font-weight: 800; }
+.panel-title-wrap { min-width: 0; flex: 1; }
+.panel-title-wrap h1 { margin: 0; font-size: 17px; font-weight: 750; }
+.panel-title-wrap span { display: block; margin-top: 3px; color: rgba(255,255,255,.72); font-size: 12px; }
+.close-button { width: 32px; height: 32px; border-radius: 10px; color: rgba(255,255,255,.78); background: transparent; font-size: 25px; line-height: 28px; }
+.close-button:hover { color: white; background: rgba(255,255,255,.14); }
+.todo-list { flex: 1; overflow-y: auto; padding: 8px 10px; }
+.empty-state { margin: 72px 24px; color: #64748b; font-size: 13px; line-height: 1.6; text-align: center; }
+.todo-item { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 8px; border-bottom: 1px solid #e2e8f0; border-left: 3px solid var(--status-color); margin-bottom: 4px; border-radius: 6px; }
+.todo-item:last-child { border-bottom: 0; }
+.todo-check { position: relative; display: flex; flex: 0 0 auto; width: 22px; height: 22px; align-items: center; justify-content: center; cursor: pointer; }
+.todo-check input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.custom-check { display: block; width: 19px; height: 19px; border: 1.5px solid #94a3b8; border-radius: 6px; color: transparent; font-size: 14px; font-weight: 800; line-height: 16px; text-align: center; transition: all .12s ease; }
+.todo-check input:checked + .custom-check { border-color: #4f46e5; color: #fff; background: #4f46e5; }
+.todo-title { min-width: 0; flex: 1; overflow: hidden; color: #1e293b; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.todo-edit-button { display: flex; flex-direction: column; align-items: stretch; gap: 4px; min-width: 0; flex: 1; padding: 5px 0; text-align: left; background: transparent; border-radius: 5px; }
+.todo-edit-button:hover .todo-title { color: #4f46e5; }
+.todo-deadline { color: #475569; font-size: 11px; }
+.todo-status { font-size: 10px; color: #475569; }
+.todo-status::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: var(--status-color); box-shadow: 0 0 0 1px #94a3b888; }
+.completed .todo-title { color: #94a3b8; text-decoration: line-through; }
+.remove-button { width: 28px; height: 28px; border-radius: 8px; color: #94a3b8; background: transparent; font-size: 20px; line-height: 24px; }
+.remove-button:hover { color: #ef4444; background: #fee2e2; }
+.panel-footer { padding: 10px 10px 12px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+.add-row { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 42px; border: 1px dashed #a5b4fc; border-radius: 11px; color: #4f46e5; background: #eef2ff; font-size: 13px; font-weight: 650; }
+.add-row:hover { background: #e0e7ff; }
+.plus { font-size: 21px; line-height: 17px; }
+.add-editor { display: flex; align-items: center; gap: 6px; }
+.add-editor input { min-width: 0; flex: 1; height: 40px; padding: 0 10px; border: 1px solid #c7d2fe; border-radius: 10px; outline: none; color: #1e293b; background: white; font-size: 13px; }
+.add-editor input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.14); }
+.confirm-button, .cancel-button { width: 32px; height: 32px; border-radius: 9px; font-size: 18px; font-weight: 750; }
+.confirm-button { color: white; background: #4f46e5; }
+.cancel-button { color: #64748b; background: #e2e8f0; }
+.validation-error { margin: 5px 4px 0; color: #dc2626; font-size: 11px; }
+.error-banner { position: absolute; z-index: 10; bottom: 68px; right: 10px; left: 10px; padding: 12px; border: 1px solid #fecaca; border-radius: 10px; color: #991b1b; background: #fef2f2; font-size: 12px; box-shadow: 0 4px 20px #0002; }
+.error-banner p { margin: 0 0 8px; line-height: 1.6; }
+.error-banner button { padding: 6px 10px; margin-right: 6px; border-radius: 6px; color: #991b1b; background: #fee2e2; }
+.floating-button { touch-action: none; user-select: none; border: 1px solid #94a3b866; }
+.panel-logo { border: 1px solid #94a3b866; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.panel-content { width: 100%; height: 100%; }
+.editor-backdrop { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 18px; background: #0f172a99; }
+.todo-editor { width: 100%; max-height: 100%; overflow-y: auto; padding: 16px; border-radius: 14px; background: #f8fafc; color: #1e293b; box-shadow: 0 12px 36px #0004; }
+.todo-editor h2 { margin: 0 0 14px; font-size: 17px; }
+.editor-fields { display: flex; flex-direction: column; gap: 7px; }
+.editor-fields label { font-size: 12px; font-weight: 650; }
+.editor-fields input, .editor-fields textarea, .editor-fields select { width: 100%; min-width: 0; padding: 8px; border: 1px solid #cbd5e1; border-radius: 7px; background: white; color: #1e293b; font-size: 13px; }
+.editor-fields textarea { resize: vertical; min-height: 70px; max-height: 160px; }
+.deadline-hint { display: flex; align-items: center; justify-content: space-between; gap: 6px; color: #64748b; font-size: 11px; }
+.deadline-hint button { padding: 3px; background: transparent; color: #4f46e5; font-size: 11px; }
+.editor-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.editor-actions button { padding: 8px 14px; border-radius: 7px; color: #475569; background: #e2e8f0; font-size: 13px; }
+.editor-actions .editor-save { background: #4f46e5; color: white; }
+
+.field-hint { margin: 0; font-size: 11px; line-height: 1.5; color: #64748b; }
+.settings-panel h3 { margin: 8px 0 0; font-size: 13px; }
+.color-setting { display: flex; align-items: center; gap: 8px; }
+.color-setting span:first-child { flex: 1; }
+.color-setting input { width: 40px; height: 30px; padding: 2px; cursor: pointer; }
+.color-setting span:last-child { font: 11px monospace; color: #64748b; }
+.restore-colors { padding: 8px; border-radius: 6px; background: #e2e8f0; color: #334155; }
+.pin-setting { display: flex; align-items: center; gap: 7px; }
+.pin-setting input { width: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+@keyframes panel-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }

@@ -1,0 +1,37 @@
+{
+  "name": "todo-floating-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run check && vite build",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.0",
+    "@tauri-apps/plugin-store": "^2.4.0",
+    "svelte": "^5.57.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@tauri-apps/cli": "^2.12.5",
+    "@testing-library/svelte": "^5.4.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.0.0",
+    "jsdom": "^29.0.0",
+    "svelte-check": "^4.7.8",
+    "typescript": "^5.9.3",
+    "vite": "^6.2.7",
+    "vitest": "^3.1.4"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "svelte-preprocess@5.1.4": true
+  }
+}

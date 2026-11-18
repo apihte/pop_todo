@@ -1,0 +1,71 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/svelte';
+import { tick } from 'svelte';
+vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => false, invoke: vi.fn() }));
+import App from '../src/App.svelte';
+import { createTodo } from '../src/lib/todos';
+
+afterEach(() => { cleanup(); vi.useRealTimers(); localStorage.clear(); });
+it('updates the collapsed icon without clicks when midnight and deadlines pass', async () => {
+  vi.useFakeTimers();
+  const midnight = new Date(2026, 5, 16, 0).getTime();
+  vi.setSystemTime(midnight - 1000);
+  const todo = { ...createTodo('到期测试'), deadline: new Date(midnight + 1000).toISOString() };
+  localStorage.setItem('floating-todo-preview-v1', JSON.stringify({ version: 1, todos: [todo] }));
+  localStorage.setItem('floating-todo-preview-colors-v1', JSON.stringify({ normal: '#123456', today: '#aaaa00', overdue: '#aa0000' }));
+  const view = render(App);
+  await vi.advanceTimersByTimeAsync(0); await tick();
+  const icon = view.getByRole('button', { name: '展开代办列表' });
+  expect(icon.dataset.status).toBe('normal');
+  expect(icon.style.background).toBe('rgb(18, 52, 86)');
+  await vi.advanceTimersByTimeAsync(1000); await tick();
+  expect(icon.dataset.status).toBe('today');
+  expect(icon.style.background).toBe('rgb(170, 170, 0)');
+  await vi.advanceTimersByTimeAsync(2000); await tick();
+  expect(icon.dataset.status).toBe('overdue');
+  expect(icon.style.background).toBe('rgb(170, 0, 0)');
+  await fireEvent.click(icon); await vi.advanceTimersByTimeAsync(0); await tick();
+  expect(view.container.querySelector('.todo-item')?.getAttribute('data-status')).toBe('overdue');
+  await fireEvent.click(view.getByRole('checkbox')); await vi.advanceTimersByTimeAsync(0); await tick();
+  expect(view.container.querySelector('.todo-item')?.getAttribute('data-status')).toBe('completed');
+  await fireEvent.click(view.getAllByRole('button', { name: '收起代办列表' })[0]);
+  await vi.advanceTimersByTimeAsync(0); await tick();
+  expect(view.getByRole('button', { name: '展开代办列表' }).dataset.status).toBe('normal');
+});
+
+it('shows unscheduled items in white with readable glyphs and lower urgency', async () => {
+  localStorage.clear();
+  const none = createTodo('无时间');
+  localStorage.setItem('floating-todo-preview-v1', JSON.stringify({ version: 1, todos: [none] }));
+  const view = render(App);
+  const icon = view.getByRole('button', { name: '展开代办列表' });
+  await waitFor(() => expect(icon.dataset.status).toBe('unscheduled'));
+  expect(icon.style.background).toBe('rgb(255, 255, 255)');
+  expect(icon.style.color).toBe('rgb(17, 24, 39)');
+  expect(view.getByRole('status').textContent).toBe('未设置时间');
+  await fireEvent.click(icon);
+  await view.findByRole('button', { name: '编辑“无时间”' });
+  const row = view.container.querySelector<HTMLElement>('.todo-item')!;
+  expect(row.dataset.status).toBe('unscheduled');
+  expect(row.style.getPropertyValue('--status-color')).toBe('#ffffff');
+  await fireEvent.click(view.getByRole('checkbox'));
+  await waitFor(() => expect(row.dataset.status).toBe('completed'));
+  await fireEvent.click(view.getAllByRole('button', { name: '收起代办列表' })[0]);
+  await waitFor(() => expect(view.getByRole('button', { name: '展开代办列表' }).dataset.status).toBe('normal'));
+});
+
+it('opens an empty creation dialog, cancels without creating and opens settings from the list', async () => {
+  localStorage.clear();
+  const view = render(App);
+  await fireEvent.click(view.getByRole('button', { name: '展开代办列表' }));
+  await tick();
+  await fireEvent.click(view.getByRole('button', { name: /新增代办/ }));
+  expect(view.getByRole('dialog', { name: '新增代办' })).toBeTruthy();
+  await fireEvent.click(view.getByRole('button', { name: '取消' }));
+  expect(view.queryByRole('dialog')).toBeNull();
+  expect(view.queryByRole('checkbox')).toBeNull();
+  await fireEvent.click(view.getByRole('button', { name: '设置' })); await tick();
+  expect(await view.findByRole('dialog', { name: '设置' })).toBeTruthy();
+  await fireEvent.keyDown(view.getByLabelText(/正常/), { key: 'Escape' });
+  expect(view.queryByRole('dialog')).toBeNull();
+});
